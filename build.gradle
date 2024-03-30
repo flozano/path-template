@@ -1,0 +1,29 @@
+plugins {
+    id 'maven-publish'
+}
+
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+    group = 'io.github.flozano'
+}
+
+ext {
+    googleApiCommonVersion = '2.29.1'
+    junitVersion = '5.9.1'
+    Meta = [
+            desc          : "Path template",
+            license       : "Apache-2.0",
+            licenseUrl    : "https://opensource.org/licenses/Apache-2.0",
+            githubRepo    : "flozano/path-template",
+            release       : "https://s01.oss.sonatype.org/service/local/",
+            snapshot      : "https://s01.oss.sonatype.org/content/repositories/snapshots/",
+            developerId   : "flozano",
+            developerName : "Francisco A. Lozano",
+            developerEmail: "flozano+pathtemplate@gmail.com"
+    ]
+}
+
+

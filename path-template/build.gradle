@@ -1,0 +1,92 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
+}
+
+tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    enableRelocation = true
+    //relocate 'com.google', 'io.github.flozano.pathtemplate.shadow.google'
+    //relocate 'org.checkerframework', 'io.github.flozano.pathtemplate.shadow.checkerframework'
+    //relocate 'javax.annotation', 'io.github.flozano.pathtemplate.shadow.javax.annotation'
+
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+    withSourcesJar()
+    withJavadocJar()
+}
+
+dependencies {
+    implementation "com.google.api:api-common:${googleApiCommonVersion}"
+    testImplementation platform("org.junit:junit-bom:${junitVersion}")
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+publishing {
+    repositories {
+        maven {
+            def releaseRepo = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotRepo = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            name = "OSSRH"
+            url = !project.version.toString().endsWith("-SNAPSHOT") ? releaseRepo : snapshotRepo
+            credentials {
+                username = findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
+                password = findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) { publication ->
+            from components.java
+            pom {
+                groupId = project.group
+                artifactId = project.name
+                version = project.version
+                name = project.name
+                description = Meta.desc
+                packaging = 'jar'
+                url = "https://github.com/${Meta.githubRepo}"
+                licenses {
+                    license {
+                        name = Meta.license
+                        url = Meta.licenseUrl
+                    }
+                }
+                developers {
+                    developer {
+                        id = Meta.developerId
+                        name = Meta.developerName
+                        email = Meta.developerEmail
+                    }
+                }
+                scm {
+                    url = "https://github.com/${Meta.githubRepo}.git"
+                    connection = "scm:git:git://github.com/${Meta.githubRepo}.git"
+                    developerConnection = "scm:git:git://github.com/${Meta.githubRepo}.git"
+                }
+                issueManagement {
+                    url = "https://github.com/${Meta.githubRepo}/issues"
+                }
+            }
+        }
+    }
+}
+
+
+signing {
+    def envSigningKey = System.getenv("GPG_SIGNING_KEY")
+    def envSigningPassphrase = System.getenv("GPG_SIGNING_PASSPHRASE")
+    if (envSigningKey && envSigningPassphrase) {
+        useInMemoryPgpKeys(envSigningKey, envSigningPassphrase)
+    }
+    sign publishing.publications.maven
+}
