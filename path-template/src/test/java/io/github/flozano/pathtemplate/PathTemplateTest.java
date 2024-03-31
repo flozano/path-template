@@ -78,6 +78,12 @@ public class PathTemplateTest {
 	}
 
 	@Test
+	public void testVariablesWithSlashes() {
+		assertEquals("/whatever/123/456/789",
+				PathTemplate.render("/whatever/{xxx}/{yyy?slashok}", Map.of("xxx", "123", "yyy", "456/789")));
+	}
+
+	@Test
 	public void testVariablesWithLc() {
 		assertEquals("whatever/name/surname",
 				PathTemplate.render("whatever/{xxx?lc}/{yyy?lc}", Map.of("xxx", "NAME", "yyy", "SURNAME")));

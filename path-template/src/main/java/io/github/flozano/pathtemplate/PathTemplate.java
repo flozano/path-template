@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import com.google.api.pathtemplate.ValidationException;
 
 public final class PathTemplate {
+	private static final CharSequence SLASH_CODE = "%2F";
 	private final com.google.api.pathtemplate.PathTemplate engine;
 	private final String prefix;
 	private final Map<String, List<String>> varsWhichNeedRepeatedProcessing;
@@ -76,7 +77,7 @@ public final class PathTemplate {
 		System.out.println("modified: " + modifiedValues);
 
 		try {
-			return prefix + engine.instantiate(modifiedValues);
+			return prefix + engine.instantiate(modifiedValues).replace(SLASH_CODE, "/");
 		} catch (ValidationException e) {
 			throw new IllegalArgumentException("Invalid bindings", e);
 		}
@@ -86,7 +87,8 @@ public final class PathTemplate {
 			"uc", new ValueProcessor(0, String::toUpperCase), //
 			"lc", new ValueProcessor(0, String::toLowerCase), //
 			"ucfirst", new ValueProcessor(0, s -> s.substring(0, 1).toUpperCase() + s.substring(1)), //
-			"lcfirst", new ValueProcessor(0, s -> s.substring(0, 1).toLowerCase() + s.substring(1)) //
+			"lcfirst", new ValueProcessor(0, s -> s.substring(0, 1).toLowerCase() + s.substring(1)), //
+			"slashok", new ValueProcessor(0, s -> s.replace("/", SLASH_CODE)) //
 	);
 
 	private static boolean occurrencesOfCharGreaterThan(String s, char c, int n) {
