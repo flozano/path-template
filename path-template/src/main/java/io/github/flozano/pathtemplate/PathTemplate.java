@@ -66,7 +66,6 @@ public final class PathTemplate {
 				}
 			}
 		}
-		System.out.println("processed: " + processed);
 		// Process the modifiers
 		Map<String, String> modifiedValues = new HashMap<>(processed);
 		for (String key : processed.keySet()) {
@@ -74,7 +73,6 @@ public final class PathTemplate {
 				modifiedValues.put(key + "?" + suffix, processor.apply(processed.get(key)));
 			});
 		}
-		System.out.println("modified: " + modifiedValues);
 
 		try {
 			return prefix + engine.instantiate(modifiedValues).replace(SLASH_CODE, "/");
