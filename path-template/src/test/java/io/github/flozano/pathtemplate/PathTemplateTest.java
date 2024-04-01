@@ -84,6 +84,13 @@ public class PathTemplateTest {
 	}
 
 	@Test
+	public void testEmptyVarOK() {
+		assertEquals("/whatever/123/789",
+				PathTemplate.render("/whatever/{xxx}/{yyy?emptycollapse}/{zzz}", Map.of("xxx", "123", "yyy", "", "zzz", "789")));
+	}
+
+
+	@Test
 	public void testVariablesWithLc() {
 		assertEquals("whatever/name/surname",
 				PathTemplate.render("whatever/{xxx?lc}/{yyy?lc}", Map.of("xxx", "NAME", "yyy", "SURNAME")));
