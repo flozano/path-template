@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import com.google.api.pathtemplate.ValidationException;
 
 public final class PathTemplate {
+
 	private static final CharSequence SLASH_CODE = "%2F";
 	private final com.google.api.pathtemplate.PathTemplate engine;
 	private final String prefix;
@@ -73,9 +74,12 @@ public final class PathTemplate {
 				modifiedValues.put(key + "?" + suffix, processor.apply(processed.get(key)));
 			});
 		}
-
 		try {
-			return prefix + engine.instantiate(modifiedValues).replace(SLASH_CODE, "/");
+			var result = prefix + engine.instantiate(modifiedValues);
+			for(var valueProcessor : PROCESSORS.values()) {
+				result = valueProcessor.applyPost(result);
+			}
+			return result;
 		} catch (ValidationException e) {
 			throw new IllegalArgumentException("Invalid bindings", e);
 		}
@@ -84,9 +88,13 @@ public final class PathTemplate {
 	Map<String, ValueProcessor> PROCESSORS = Map.of( //
 			"uc", new ValueProcessor(0, String::toUpperCase), //
 			"lc", new ValueProcessor(0, String::toLowerCase), //
-			"ucfirst", new ValueProcessor(0, s -> s.substring(0, 1).toUpperCase() + s.substring(1)), //
-			"lcfirst", new ValueProcessor(0, s -> s.substring(0, 1).toLowerCase() + s.substring(1)), //
-			"slashok", new ValueProcessor(0, s -> s.replace("/", SLASH_CODE)) //
+			"ucfirst", new ValueProcessor(1, s -> s.substring(0, 1).toUpperCase() + s.substring(1)), //
+			"lcfirst", new ValueProcessor(1, s -> s.substring(0, 1).toLowerCase() + s.substring(1)), //
+			"slashok", new ValueProcessor(0, s -> s.replace("/", SLASH_CODE), s -> s.replace(SLASH_CODE, "/")), //
+			"emptycollapse", new ValueProcessor(0, s ->
+					s.isEmpty() ? "EMPTY_REMOVE_ME" : s,
+					s -> s
+					.replaceAll("EMPTY_REMOVE_ME/", "")) //
 	);
 
 	private static boolean occurrencesOfCharGreaterThan(String s, char c, int n) {
@@ -108,16 +116,31 @@ final class ValueProcessor {
 
 	private final int minimumLength;
 	private final Function<String, String> processor;
+	private final Function<String, String> postProcessor;
 
 	ValueProcessor(int minimumLength, Function<String, String> processor) {
 		this.minimumLength = minimumLength;
 		this.processor = processor;
+		this.postProcessor = null;
+	}
+
+	ValueProcessor(int minimumLength, Function<String, String> processor, Function<String,String> postProcessor) {
+		this.minimumLength = minimumLength;
+		this.processor = processor;
+		this.postProcessor = postProcessor;
 	}
 
 	public String apply(String s) {
-		if (s == null || s.isEmpty() || s.length() < minimumLength) {
+		if (s == null || s.length() < minimumLength) {
 			return s;
 		}
 		return processor.apply(s);
+	}
+
+	public String applyPost(String s) {
+		if (postProcessor == null) {
+			return s;
+		}
+		return postProcessor.apply(s);
 	}
 }
