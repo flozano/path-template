@@ -111,7 +111,7 @@ public final class PathTemplate {
 	}
 
 	public String toString() {
-		return "PathTemplate{" + "engine=" + engine + ",qprefix=" + prefix + '}';
+		return "PathTemplate{" + "engine=" + engine + ",prefix=" + prefix + '}';
 	}
 }
 
