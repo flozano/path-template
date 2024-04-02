@@ -110,6 +110,9 @@ public final class PathTemplate {
 		return false;
 	}
 
+	public String toString() {
+		return "PathTemplate{" + "engine=" + engine + ",qprefix=" + prefix + '}';
+	}
 }
 
 final class ValueProcessor {
